@@ -1,0 +1,221 @@
+<?php
+
+/**
+ * @file
+ * Module file for block_example.
+ */
+
+/**
+ * @defgroup block_example Example: Block
+ * @ingroup examples
+ * @{
+ * Demonstrates code creation of blocks.
+ *
+ * This is an example outlining how a module can define blocks that can be
+ * displayed on various pages of a site, or how to alter blocks provided by
+ * other modules.
+ */
+
+/**
+ * Implements hook_menu().
+ *
+ * Provides a default page to explain what this module does.
+ */
+// function block_example_menu() {
+//   $items['examples/block_example'] = array(
+//     'page callback' => 'block_example_page',
+//     'access callback' => TRUE,
+//     'title' => 'Block Example',
+//   );
+//   return $items;
+// }
+
+/**
+ * Simple page function to explain what the block example is about.
+ */
+// function block_example_page() {
+//   $page = array(
+//     '#type' => 'markup',
+//     '#markup' => t('The Block Example provides three sample blocks which demonstrate the various block APIs. To experiment with the blocks, enable and configure them on <a href="@url">the block admin page</a>.', array('@url' => url('admin/structure/block'))),
+//   );
+//   return $page;
+// }
+/**
+ * Implements hook_block_info().
+ *
+ * This hook declares what blocks are provided by the module.
+ */
+function insta_block_block_info()
+{
+  // This hook returns an array, each component of which is an array of block
+  // information. The array keys are the 'delta' values used in other block
+  // hooks.
+  //
+  // The required block information is a block description, which is shown
+  // to the site administrator in the list of possible blocks. You can also
+  // provide initial settings for block weight, status, etc.
+  //
+  // Many options are defined in hook_block_info():
+  $blocks['insta_block'] = array(
+    // info: The name of the block.
+    'info' => t('Instagramm by JS'),
+    // Block caching options (per role, per user, etc.)
+    // DRUPAL_CACHE_PER_ROLE is the default.
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+
+  // This sample shows how to provide default settings. In this case we'll
+  // enable the block in the first sidebar and make it visible only on
+  // 'node/*' pages. See the hook_block_info() documentation for these.
+  // $blocks['example_empty'] = array(
+  //   'info' => t('Example: empty block'),
+  //   'status' => TRUE,
+  //   'region' => 'sidebar_first',
+  //   'visibility' => BLOCK_VISIBILITY_LISTED,
+  //   'pages' => 'node/*',
+  // );
+
+  // $blocks['example_uppercase'] = array(
+  //   // info: The name of the block.
+  //   'info' => t('Example: uppercase this please'),
+  //   'status' => TRUE,
+  //   'region' => 'sidebar_first',
+  // );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_configure().
+ *
+ * This hook declares configuration options for blocks provided by this module.
+ */
+function insta_block_block_configure($delta = '')
+{
+  $form = array();
+  // The $delta parameter tells us which block is being configured.
+  // In this example, we'll allow the administrator to customize
+  // the text of the 'configurable text string' block defined in this module.
+  if ($delta == 'insta_block') {
+    // All we need to provide is the specific configuration options for our
+    // block. Drupal will take care of the standard block configuration options
+    // (block title, page visibility, etc.) and the save button.
+    $form['insta_block_string'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Insta Account Name'),
+      '#size' => 60,
+      '#description' => t('Put here you account name'),
+      '#default_value' => variable_get('insta_block_string', t('Insta acc Name')),
+    );
+    $form['insta_block_count'] = array(
+      '#type' => 'textfield',
+      '#title' => t('How many images'),
+      '#size' => 60,
+      '#description' => t('How may images show in block?'),
+      '#default_value' => variable_get('insta_block_count', '6'),
+    );
+  }
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ *
+ * This hook declares how the configured options for a block
+ * provided by this module are saved.
+ */
+function insta_block_block_save($delta = '', $edit = array())
+{
+  // We need to save settings from the configuration form.
+  // We need to check $delta to make sure we are saving the right block.
+  if ($delta == 'insta_block') {
+    // Have Drupal save the string to the database.
+    variable_set('insta_block_string', $edit['insta_block_string']);
+    variable_set('insta_block_count', $edit['insta_block_count']);
+  }
+}
+
+/**
+ * Implements hook_block_view().
+ *
+ * This hook generates the contents of the blocks themselves.
+ */
+function insta_block_block_view($delta = '')
+{
+  // The $delta parameter tells us which block is being requested.
+  switch ($delta) {
+    case 'insta_block':
+      // The subject is displayed at the top of the block. Note that it
+      // should be passed through t() for translation. The title configured
+      // for the block using Drupal UI supercedes this one.
+      $block['subject'] = t('My instargamm list');
+      // The content of the block is typically generated by calling a custom
+      // function.
+      $block['content'] = insta_block_contents($delta);
+      break;
+  }
+  return $block;
+}
+
+/**
+ * A module-defined block content function.
+ */
+function insta_block_contents($which_block)
+{
+  switch ($which_block) {
+    case 'insta_block':
+      // Modules would typically perform some database queries to fetch the
+      // content for their blocks. Here, we'll just use the variable set in the
+      // block configuration or, if none has set, a default value.
+      // Block content can be returned in two formats: renderable arrays
+      // (as here) are preferred though a simple string will work as well.
+      // Block content created through the UI defaults to a string.
+      $result = array(
+        '#markup' => theme('insta_block', insta_block_generate_url_list(variable_get('insta_block_count', 6))),
+        '#attached' => array(
+          'js' => array(
+            array(
+              'type' => 'setting',
+              'data' => array('insta_block' => array('insta_block_string' => variable_get('insta_block_string', 'lerapanarina'))),
+            ),
+            array(
+              'data' => drupal_get_path('module', 'insta_block') . '/js/insta.js',
+              'group' => JS_DEFAULT,
+              'scope' => 'footer',
+            ),
+          ),
+          'css' => array(
+            drupal_get_path('module', 'insta_block') . '/css/insta.css',
+          ),
+        ),
+      );
+      return $result;
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function insta_block_theme()
+{
+  return array(
+    'insta_block' => array(
+      'variables' => insta_block_generate_url_list(variable_get('insta_block_count', 6)),
+      'template' => 'insta_block', //ignore .tpl.php
+    ),
+  );
+}
+
+/**
+ * Generate dumb list of images URL
+ */
+function insta_block_generate_url_list($count = 6)
+{
+  $variables = [];
+  for ($i = 0; $i < $count; $i++) {
+    $variables['images'][] = 'https://source.unsplash.com/random/600x600';
+  }
+  $variables['user_url'] = 'https://www.instagram.com/' . variable_get('insta_block_string', 'lerapanarina');
+
+  return $variables;
+}

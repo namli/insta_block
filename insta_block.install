@@ -1,0 +1,14 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the insta_block module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ *
+ * @ingroup block_example
+ */
+function insta_block_uninstall() {
+  variable_del('insta_block_string');
+}

@@ -1,0 +1,19 @@
+.block-insta-block-insta-block {}
+
+.block-insta-block-insta-block ul {}
+
+.block-insta-block-insta-block ul li {
+  list-style: none;
+}
+
+@media screen and (min-width: 1024px) {
+  .block-insta-block-insta-block ul {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .block-insta-block-insta-block ul li {
+    width: 33%;
+    padding: .5rem;
+  }
+}
